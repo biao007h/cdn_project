@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/static/lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .err{
+            color: red;
+        }
+        .layui-input-block{
+            width: 300px;
+        }
+        .subDomain{
+            width: 1000px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">域名</label>
+        <div class="layui-input-block">
+            <span class="domain__domain_err err" ></span>
+            <input type="text" name="domain__domain" lay-verify="required" lay-reqtext="域名不能为空" placeholder="请输入域名" value="" class="layui-input">
+            <tip>填写域名</tip>
+        </div>
+    </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">使用ns</label>
+            <div class="layui-input-block " style="width: 200px">
+                <select name="ns"  id="">
+                    {% for item in ns_list %}
+                        <option value="{{item}}">{{ item }}  </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">cname</label>
+        <div class="layui-input-block">
+            <input name="cname__cname" class="layui-input" placeholder="请输入别名信息"></input>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">分组</label>
+        <div class="layui-input-block " style="width: 200px">
+            <select name="group"  id="">
+                {% for item in group_list %}
+                    <option value="{{item}}">{{ item }}  </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-sm" id="addSubDomain"> <i class="layui-icon">&#xe654;</i></button>
+        </div>
+    </div>
+    <div id="subDomain" style="width: 800px">
+        <table class="layui-table" lay-skin="line">
+      <thead>
+        <tr>
+          <th>协议</th>
+          <th>主机头</th>
+            <th>访问端口</th>
+          <th>协议</th>
+          <th>回源</th>
+            <th>回源端口</th>
+            <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+{#        <tr id="tr_ele" >#}
+{#          <td>#}
+{#            <div style="width: 80px;height: 30px ;margin: auto;">#}
+{#              <select name="pre_proto" id="pre_proto">#}
+{#                  {% for item in protocol_type %}#}
+{#                      <option value="{{ item.0  }}">{{ item.1 }}</option>#}
+{#                  {% endfor %}#}
+{#              </select>#}
+{#            </div>#}
+{#          </td>#}
+{#          <td><input type="text" name="host_head" style="height: 30px;"> </td>#}
+{#            <td><input type="text" name="pre_port" style="width: 80px;height: 30px"></td>#}
+{#          <td>#}
+{#              <div style="width: 80px;height: 30px">#}
+{#              <select name="pre_proto" id="">#}
+{#                  {% for item in protocol_type %}#}
+{#                      <option value="{{ item.0  }}">{{ item.1 }}</option>#}
+{#                  {% endfor %}#}
+{#              </select>#}
+{#              </div>#}
+{#          </td>#}
+{#            <td>#}
+{#                <input type="text" name="use_src"  style="height: 30px">#}
+{#            </td>#}
+{#            <td><input type="text" name="suf_port" style="width: 80px;height: 30px"></td>#}
+{#        </tr>#}
+      </tbody>
+    </table>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="/static/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+<script>
+    $(function(){
+        $("[name='domain__domain']").change(function () {
+            NewCname();
+        })
+        $("#addSubDomain").click(function () {
+            addSubDomain()
+        })
+        $("#tbody").on("click","button",function () {
+            id_num= $(this).attr("tr_id")
+            $("[id="+id_num+"]").remove()
+        })
+    })
+    function addSubDomain() {
+        new_tr=$("<tr></tr>");
+        // 做个随机数标记当前行，方便删除使用
+        id_num=parseInt(Math.random()*100012)
+        new_tr.prop("id",id_num)
+        new_tr.html("        <td>\n" +
+            "            <div style=\"width: 80px;height: 30px ;margin: auto;\">\n" +
+            "              <select name=\"pre_proto\" id=\"pre_proto\">\n" +
+            "                  {% for item in protocol_type %}\n"+
+                "                      <option value=\"{{ item.0  }}\">{{ item.1 }}</option>\n"+
+                "                  {% endfor %}\n" +
+            "              </select>\n" +
+            "            </div>\n" +
+            "          </td>\n" +
+            "          <td><input type=\"text\" name=\"host_head\" style=\"height: 30px;\"> </td>\n" +
+            "            <td><input type=\"text\" name=\"pre_port\" style=\"width: 80px;height: 30px\"></td>\n" +
+            "          <td>\n" +
+            "              <div style=\"width: 80px;height: 30px\">\n" +
+            "              <select name=\"pre_proto\" id=\"\">\n" +
+            "                  {% for item in protocol_type %}\n"+
+                "                      <option value=\"{{ item.0  }}\">{{ item.1 }}</option>\n"+
+                "                  {% endfor %}\n" +
+            "              </select>\n" +
+            "              </div>\n" +
+            "          </td>\n" +
+            "            <td>\n" +
+            "                <input type=\"text\" name=\"use_src\"  style=\"height: 30px\">\n" +
+            "            </td>\n" +
+            "            <td><input type=\"text\" name=\"suf_port\" style=\"width: 80px;height: 30px\"></td>")
+        del_but=$("<button class=\"layui-icon\">&#x1006;</button>")
+        del_but.attr("tr_id",id_num)
+        new_tr.append(del_but)
+        $("#tbody").append(new_tr)
+        var form = layui.form;
+        form.render();
+   }
+    function NewCname(){
+            domain_v=$("[name='domain__domain']").val()
+            domain_v=domain_v.replace(".","")
+            ns_v=$("[name='ns']").find("option:selected").text()
+            cname_v=domain_v+'.'+ns_v
+            $("[name='cname__cname']").val(cname_v)
+    }
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+        //监听提交
+
+        form.on('submit(saveBtn)', function (data) {
+            var index = layer.alert(JSON.stringify(data.field), {
+                title: '最终的提交信息'
+            }, function () {
+                // 关闭弹出层
+                $.ajax({
+                    data:data.field,
+                    url:"addns",
+                    type:"POST",
+                    dataType:"json",
+                    success:function (arg) {
+                        if(arg.status == "ok"){
+                            layer.close(index);
+                            var iframeIndex = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(iframeIndex);
+                        }else {
+                            var err=arg.msg
+                            for ( x in err)
+                            {
+                                $("."+x+"_err").text(err[x])
+
+                            }
+                        }
+
+                    }
+                })
+
+
+                {#layer.close(index);#}
+                {##}
+                {#var iframeIndex = parent.layer.getFrameIndex(window.name);#}
+                {#parent.layer.close(iframeIndex);#}
+
+            });
+
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>

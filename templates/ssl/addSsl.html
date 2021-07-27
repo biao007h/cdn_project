@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/static/lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .err{
+            color: red;
+        }
+        {#.layui-textarea{#}
+        {#    height: 200px;#}
+        {#}#}
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">证书</label>
+        <div class="layui-input-block">
+             <span class="crt_err err" ></span>
+            <textarea id='crt' name="crt" class="layui-textarea" placeholder="请输入证书内容"></textarea>
+            <button type="button" class="layui-btn layui-btn-xs" id="crtupload">选择文件</button>
+        </div>
+
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+             <span class="__all___err err" ></span>
+        <label class="layui-form-label">key值</label>
+        <div class="layui-input-block">
+             <span class="key_err err" ></span>
+            <textarea   id='key' name="key" class="layui-textarea" placeholder="请输入key值"></textarea>
+            <button type="button" class="layui-btn layui-btn-xs" id="keyupload">选择文件</button>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="/static/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="/static/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+<script>
+
+    layui.use(['form','upload'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            upload = layui.upload;
+            $ = layui.$;
+
+        //监听提交
+         upload.render({
+            elem: '#crtupload'
+            , auto: false
+             ,accept:'file'
+            //,multiple: true
+            , bindAction: '#crtupload'
+            , choose: function (obj) {
+               // var file = this.files = obj.pushFile();
+                obj.preview(function (index, file, result) {
+                    var reader = new FileReader();
+                    console.log(this)
+                    reader.readAsText(file);
+                     reader.onload=function(f) {
+                           console.log(this)
+                         $("#crt").text(this.result);
+                     }
+                })
+            }
+        });
+         upload.render({
+            elem: '#keyupload'
+            , auto: false
+             ,accept:'file'
+            //,multiple: true
+            , bindAction: '#keyupload'
+            , choose: function (obj) {
+               // var file = this.files = obj.pushFile();
+                obj.preview(function (index, file, result) {
+                    var reader = new FileReader();
+                    console.log(this)
+                    reader.readAsText(file);
+                     reader.onload=function(f) {
+                           console.log(this)
+                         $("#key").text(this.result);
+                     }
+                })
+
+            }
+        });
+
+
+
+        form.on('submit(saveBtn)', function (data) {
+            var index = layer.alert("确认提交？", {
+                title: '最终的提交信息'
+            }, function () {
+                // 关闭弹出层
+                $.ajax({
+                    data:data.field,
+                    url:"addSsl",
+                    type:"POST",
+                    dataType:"json",
+                    success:function (arg) {
+                        if(arg.status == "ok"){
+                            layer.close(index);
+                            var iframeIndex = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(iframeIndex);
+                        }else {
+                            var err=arg.msg
+                            for ( x in err)
+                            {
+                                $("."+x+"_err").text(err[x])
+
+                            }
+                            layer.close(index);
+                        }
+
+                    }
+                })
+            });
+
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>
